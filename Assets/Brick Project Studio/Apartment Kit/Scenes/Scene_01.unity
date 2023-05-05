@@ -4014,11 +4014,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 100000, guid: de3391c4e2e22114391ca06dd133cb63, type: 3}
       propertyPath: m_Name
-      value: Book_25
+      value: spicy food
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: de3391c4e2e22114391ca06dd133cb63, type: 3}
       propertyPath: m_RootOrder
-      value: 65
+      value: 66
       objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: de3391c4e2e22114391ca06dd133cb63, type: 3}
       propertyPath: m_LocalScale.x
@@ -5288,8 +5288,8 @@ Transform:
   - {fileID: 1748046973}
   - {fileID: 1167502854}
   - {fileID: 1832533038}
-  - {fileID: 1092530224}
   - {fileID: 837540376830033675}
+  - {fileID: 1092530224}
   - {fileID: 1705447682}
   - {fileID: 2012739246}
   - {fileID: 2135290086}
@@ -31579,7 +31579,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 344837902}
-  m_RootOrder: 66
+  m_RootOrder: 65
   m_LocalEulerAnglesHint: {x: 236.95999, y: -116.56799, z: 88.195}
 --- !u!1 &837540376830518059
 GameObject:
@@ -31593,7 +31593,7 @@ GameObject:
   - component: {fileID: 837540376833457965}
   - component: {fileID: 837540376832458221}
   m_Layer: 0
-  m_Name: molecular_gastronomy_book
+  m_Name: molecular gastronomy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
