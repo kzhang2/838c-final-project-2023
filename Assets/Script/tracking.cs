@@ -11,6 +11,14 @@ public class tracking : MonoBehaviour
     public float totalTime = 0;
 
     private GameObject playerObj = null;
+    public GameObject camera;
+    public GameObject cat;
+
+    public Vector3[] catLocations;
+
+    public int catLocationInd = 0;
+    public GameObject lookingAtDebug;
+    
 
     public Vector3 localHit = Vector3.zero;
     
@@ -24,6 +32,13 @@ public class tracking : MonoBehaviour
         }
 
         playerObj = GameObject.Find("First Person Player");
+        cat.transform.position = catLocations[catLocationInd];
+        catLocations = new[]
+        {
+            new Vector3(-1.005f, 6.844f, -3.172f), // above TV position
+            new Vector3(2.658f, 5.468f, 6.473f), // kitchen counter position
+            new Vector3(-20.447f, 5.295f, -4.516f) // bedroom pillow 
+        };
     }
 
     // Update is called once per frame
@@ -60,35 +75,26 @@ public class tracking : MonoBehaviour
         {
             // Cast a ray
             RaycastHit hit;
-            Vector3 pos = playerObj.transform.position;
-            Vector3 forward = playerObj.transform.forward;
+            Vector3 pos = camera.transform.position;
+            Vector3 forward = camera.transform.forward;
 
             if (Physics.Raycast(pos, forward, out hit, Mathf.Infinity))
             {
                 localHit = hit.point;
                 Debug.DrawRay(pos, forward * 100, Color.green);
-            }
-
-            // get closest hit obj
-            float min_dist = 99999999;
-            int min_indx = 0;
-
-            for (int i = 0; i < allObjects.Length; i++)
-            {
-                float dist = Vector3.Distance(allObjects[i].transform.position, localHit);
-                if (dist < min_dist)
+                lookingAtDebug = hit.collider.gameObject;
+                string hitObjectName = lookingAtDebug.name;
+                if (trackingData.ContainsKey(hitObjectName))
                 {
-                    min_dist = dist;
-                    min_indx = i;
+                    trackingData[hitObjectName] += 1;
+                }
+
+                if (hitObjectName == "Cat Lite" && Input.GetMouseButtonDown(0))
+                {
+                    catLocationInd = (catLocationInd + 1) % catLocations.Length;
+                    cat.transform.position = catLocations[catLocationInd];
                 }
             }
-            
-            if (min_dist <= 1.3)
-            {
-                trackingData[allObjects[min_indx].name] += 1;
-            }
-
-            Debug.Log(min_dist);
 
             totalTime += 1;
         }

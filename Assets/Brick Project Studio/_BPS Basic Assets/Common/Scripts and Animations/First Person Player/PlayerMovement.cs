@@ -11,7 +11,7 @@ namespace SojaExiles
         public CharacterController controller;
 
         public float speed = 5f;
-        public float gravity = -15f;
+        public float gravity = 0f;
 
         Vector3 velocity;
 
