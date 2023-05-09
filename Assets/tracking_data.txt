@@ -1,0 +1,6 @@
+Total time: 3072
+Canvas_Painting_02: 323
+Canvas_Painting_03: 440
+WallArt_Apt_02: 310
+molecular gastronomy: 19
+spicy food: 1431
