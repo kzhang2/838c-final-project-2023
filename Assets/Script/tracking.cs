@@ -7,19 +7,12 @@ public class tracking : MonoBehaviour
 {
     public GameObject[] allObjects;
     public Dictionary<string, float> trackingData = new Dictionary<string, float>();
-    public bool istracking = false;
+    public bool istracking = true;
     public float totalTime = 0;
-
-    private GameObject playerObj = null;
+    
     public GameObject camera;
-    public GameObject cat;
-
-    public Vector3[] catLocations;
-
-    public int catLocationInd = 0;
     public GameObject lookingAtDebug;
     
-
     public Vector3 localHit = Vector3.zero;
     
     // Start is called before the first frame update
@@ -30,28 +23,19 @@ public class tracking : MonoBehaviour
         {
             trackingData[currObject.name] = 0;
         }
-
-        playerObj = GameObject.Find("First Person Player");
-        cat.transform.position = catLocations[catLocationInd];
-        catLocations = new[]
-        {
-            new Vector3(-1.005f, 6.844f, -3.172f), // above TV position
-            new Vector3(2.658f, 5.468f, 6.473f), // kitchen counter position
-            new Vector3(-20.447f, 5.295f, -4.516f) // bedroom pillow 
-        };
     }
 
     // Update is called once per frame
     void Update()
     {   
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (OVRInput.GetUp(OVRInput.RawButton.LIndexTrigger))
         {
             if (istracking == true)
             {
                 // save the data
                 string json = JsonUtility.ToJson(trackingData);
 
-                StreamWriter writer = new StreamWriter("Assets/tracking_data.txt", true);
+                StreamWriter writer = new StreamWriter(Application.persistentDataPath + "/tracking_data.txt", true);
 
                 writer.WriteLine("Total time: " + totalTime);
 
@@ -67,8 +51,7 @@ public class tracking : MonoBehaviour
             {
                 Debug.Log("Start Tracking!");
             }
-
-            istracking = !istracking;
+            //istracking = !istracking;
         }
 
         if (istracking == true)
@@ -81,21 +64,14 @@ public class tracking : MonoBehaviour
             if (Physics.Raycast(pos, forward, out hit, Mathf.Infinity))
             {
                 localHit = hit.point;
-                Debug.DrawRay(pos, forward * 100, Color.green);
+                //Debug.DrawRay(pos, forward * 100, Color.green);
                 lookingAtDebug = hit.collider.gameObject;
                 string hitObjectName = lookingAtDebug.name;
                 if (trackingData.ContainsKey(hitObjectName))
                 {
                     trackingData[hitObjectName] += 1;
                 }
-
-                if (hitObjectName == "Cat Lite" && Input.GetMouseButtonDown(0))
-                {
-                    catLocationInd = (catLocationInd + 1) % catLocations.Length;
-                    cat.transform.position = catLocations[catLocationInd];
-                }
             }
-
             totalTime += 1;
         }
     }
