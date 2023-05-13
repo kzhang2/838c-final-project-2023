@@ -2,13 +2,71 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System;
 
 public class tracking : MonoBehaviour
 {
+    [Serializable]
+    public class TrackingData
+    {
+        public float TotalTime;
+
+        public Gaze Gaze;
+
+        public ReactionTimes ReactionTimes;
+    }
+
+    [Serializable]
+    public class Gaze
+    {
+        public Music Music;
+        public Cars Cars;
+        public Cookbooks Cookbooks;
+    }
+
+    // probably eventually want to make this a list/dictionary, not hard-coded
+    [Serializable]
+    public class Music
+    {
+        public float Rap;
+
+        public float Reggae;
+
+        public float EDM;
+
+        public float Country;
+
+        public float Oldies;
+    }
+
+    [Serializable]
+    public class Cars
+    {
+        public float Hybrid;
+
+        public float Pickup;
+    }
+
+    [Serializable]
+    public class Cookbooks
+    {
+        public float Gastronomy;
+
+        public float Spicy;
+    }
+
+    [Serializable]
+    public class ReactionTimes
+    {
+        public float Cat;
+    }
+
     public GameObject[] allObjects;
     public Dictionary<string, float> trackingData = new Dictionary<string, float>();
     public bool istracking = true;
-    public float totalTime = 0;
+    public float totalCounter = 0;
     
     public GameObject camera;
     public GameObject lookingAtDebug;
@@ -28,28 +86,81 @@ public class tracking : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {   
-        if (OVRInput.GetUp(OVRInput.RawButton.LIndexTrigger))
+        if (OVRInput.GetUp(OVRInput.RawButton.LIndexTrigger) || totalCounter % 500 == 0)
         {
             if (istracking == true)
             {
-                // save the data
-                string json = JsonUtility.ToJson(trackingData);
-
-                StreamWriter writer = new StreamWriter(Application.persistentDataPath + "/tracking_data.txt", true);
+                // // StreamWriter writer = new StreamWriter(Application.persistentDataPath + "/tracking_data.txt", true);
                 // StreamWriter writer = new StreamWriter("Assets/tracking_data.txt", true);
 
-                writer.WriteLine("Total time: " + totalTime);
-                writer.WriteLine("Reaction time: " + reactionTime);
+                // writer.WriteLine("Total time: " + totalCounter * Time.fixedDeltaTime);
+                // if(reactionTime > 0)
+                // {
+                //     writer.WriteLine("Reaction time: " + reactionTime);
+                // }
 
-                foreach (var currObject in allObjects)
+                // foreach (var currObject in allObjects)
+                // {
+                //     writer.WriteLine(currObject.name + ": " + trackingData[currObject.name]);
+                // }
+
+                // writer.Close();
+
+                var data = new TrackingData
                 {
-                    writer.WriteLine(currObject.name + ": " + trackingData[currObject.name]);
-                }
+                    TotalTime = totalCounter * Time.fixedDeltaTime,
+                    Gaze = new Gaze
+                    {
+                        Music = new Music
+                        {
+                            Rap = trackingData["rap"],
+                            Reggae = trackingData["reggae"],
+                            EDM = trackingData["EDM"],
+                            Country = trackingData["country"],
+                            Oldies = trackingData["oldies"]
+                        },
+                        
+                        Cars = new Cars
+                        {
+                            Hybrid = trackingData["hybrid vehicles"],
+                            Pickup = trackingData["pickup trucks"]
+                        },
+                        
+                        Cookbooks = new Cookbooks
+                        {
+                            Gastronomy = trackingData["molecular gastronomy"],
+                            Spicy = trackingData["spicy food"]
+                        }
+                    },
 
-                writer.Close();
+                    ReactionTimes = new ReactionTimes
+                    {
+                        Cat = reactionTime
+                    }
+                };
+                //this is truly terrible code and I'm deeply sorry but you do what you gotta do
+                string json = JsonUtility.ToJson(data);
+                json = json.Replace("TotalTime", "total time");
+                json = json.Replace("Gaze", "gaze");
+                json = json.Replace("Music", "music");
+                json = json.Replace("Cars", "cars");
+                json = json.Replace("Cookbooks", "cookbooks");
+                json = json.Replace("ReactionTimes", "reaction times");
+                json = json.Replace("Rap", "rap");
+                json = json.Replace("Reggae", "reggae");
+                json = json.Replace("EDM", "EDM");
+                json = json.Replace("Country", "country");
+                json = json.Replace("Oldies", "oldies");
+                json = json.Replace("Hybrid", "hybrid vehicles");
+                json = json.Replace("Pickup", "pickup trucks");
+                json = json.Replace("Gastronomy", "molecular gastronomy");
+                json = json.Replace("Spicy", "spicy food");
+                json = json.Replace("Cat", "cat");
+
+                File.WriteAllText("Assets/tracking_data.json", json);
+
                 Debug.Log("Saved Data!");
             }
             else
@@ -69,19 +180,51 @@ public class tracking : MonoBehaviour
             if (Physics.Raycast(pos, forward, out hit, Mathf.Infinity))
             {
                 localHit = hit.point;
-                //Debug.DrawRay(pos, forward * 100, Color.green);
-                lookingAtDebug = hit.collider.gameObject;
-                string hitObjectName = lookingAtDebug.name;
-                if (trackingData.ContainsKey(hitObjectName))
+                // Debug.DrawRay(pos, forward * 100, Color.green);
+                // GameObject line = new GameObject();
+                // line.transform.position = pos;
+                // line.AddComponent<LineRenderer>();
+
+                // LineRenderer lr = line.GetComponent<LineRenderer>();
+                // lr.material.SetColor("_Color", Color.red);
+                // lr.startWidth = 0.01f;
+                // lr.endWidth = 0.01f;
+                // lr.SetPosition(0, pos);
+                // lr.SetPosition(1, forward * 1000);
+                // GameObject.Destroy(line, 0.025f);
+
+                // lookingAtDebug = hit.collider.gameObject;
+                // string hitObjectName = lookingAtDebug.name;
+                // if (trackingData.ContainsKey(hitObjectName))
+                // {
+                //     trackingData[hitObjectName] += Time.fixedDeltaTime;
+                // }
+
+                // get closest hit obj
+                float min_dist = 99999999;
+                int min_indx = 0;
+
+                for (int i = 0; i < allObjects.Length; i++)
                 {
-                    trackingData[hitObjectName] += 1;
+                    float dist = Vector3.Distance(allObjects[i].transform.position, localHit);
+                    if (dist < min_dist)
+                    {
+                        min_dist = dist;
+                        min_indx = i;
+                    }
+                }
+                
+                if (min_dist <= 1.3)
+                {
+                    trackingData[allObjects[min_indx].name] += Time.fixedDeltaTime;
                 }
             }
-            totalTime += 1;
+
+            totalCounter += 1;
         }
 
         // check if seen the cat
-        if (reactionTime == -1)
+        if (reactionTime < 0f && reactionTimeCounter < 8f)
         {
             RaycastHit hit;
             Vector3 pos = camera.transform.position;
@@ -90,19 +233,15 @@ public class tracking : MonoBehaviour
             if (Physics.Raycast(pos, forward, out hit, Mathf.Infinity))
             {
                 localHit = hit.point;
-                //Debug.DrawRay(pos, forward * 100, Color.green);
-                lookingAtDebug = hit.collider.gameObject;
-                string hitObjectName = lookingAtDebug.name;
-                if (Vector3.Distance(cat.transform.position, localHit) <= 1.2)
+                // Debug.DrawRay(pos, forward * 100, Color.green);
+                if (Vector3.Distance(cat.transform.position, localHit) <= 1.3)
                 {
-                    reactionTime = reactionTimeCounter;
+                    reactionTime = reactionTimeCounter - 5.2f;  // meow starts after 5.2 seconds in audio clip; negative values (false positives, aka the user looked before the sound played) will be disregarded later
                     Debug.Log("Seen!");
                 }
             }
 
-            reactionTimeCounter += 1;
+            reactionTimeCounter += Time.fixedDeltaTime;
         }
-
-        totalTime += 1;
     }
 }

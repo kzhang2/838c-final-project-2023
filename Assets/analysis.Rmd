@@ -1,0 +1,130 @@
+---
+title: "Reviewing your activity"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+library(rjson)
+data <- fromJSON(file = "tracking_data.json")
+```
+
+## Product interest
+
+```{r interest1}
+category_scores <- sapply(data$gaze, function(category) {
+  items <- unlist(category)
+  
+  # to determine which categories to show to the participant, calculate a score combining total time and range of times spent looking at objects within categories
+  return(sum(items) + max(items) - min(items))
+})
+
+sorted_categories <- names(sort(category_scores, decreasing = TRUE))
+items <- unlist(data$gaze[[sorted_categories[1]]])
+
+interest <- tibble(item = names(items), time = items)
+
+interest %>%
+  mutate(item = fct_reorder(item, desc(time))) %>%
+  ggplot() +
+  geom_col(aes(x = item, y = time)) +
+  labs(title = paste("Gaze tracking:", sorted_categories[1])) +
+  xlab("") +
+  ylab("Time (sec)") +
+  theme_bw()
+```
+
+Based on what you looked at the most, Total VR has inferred that you are interested in `r names(sort(items, decreasing = TRUE))[1]`.
+
+## Cognitive processing speed
+```{r reaction, out.width="80%"}
+baseline = 1.55
+
+# if a reaction was observed; should probably later change this to having the properties be absent from the JSON and checking for length > 0, but I ran into issues with that (I suspect because the optional property was messing up serialization)
+if(data$`reaction times`$cat > 0)
+{
+  user_time <- mean(unlist(data$`reaction times`))
+  
+  reaction <- tibble(item = c("Baseline", "Your average time"), time = c(baseline, user_time))
+
+  reaction %>%
+    ggplot() +
+    geom_col(aes(x = item, y = time)) +
+    labs(title = "Reaction time") +
+    xlab("") +
+    ylab("Reaction time (sec)") +
+    theme_bw()
+}
+```
+
+`r ifelse(!length(data$"reaction times"), "No relevant data collected.", paste("Based on your reactions to things happening around you, Total VR has inferred that your cognitive processing speed is likely", ifelse(user_time > 1.2 * baseline, "below", ifelse(user_time < 0.8 * baseline, "above", "about")), "average."))`
+
+## Product interest
+
+```{r interest2}
+items <- unlist(data$gaze[[sorted_categories[2]]])
+
+interest <- tibble(item = names(items), time = items)
+
+interest %>%
+  mutate(item = fct_reorder(item, desc(time))) %>%
+  ggplot() +
+  geom_col(aes(x = item, y = time)) +
+  labs(title = paste("Gaze tracking:", sorted_categories[2])) +
+  xlab("") +
+  ylab("Time (sec)") +
+  theme_bw()
+```
+
+Based on what you looked at the most, Total VR has inferred that you are interested in `r names(sort(items, decreasing = TRUE))[1]`.
+
+## Product interest
+
+```{r interest3}
+items <- unlist(data$gaze[[sorted_categories[3]]])
+
+interest <- tibble(item = names(items), time = items)
+
+interest %>%
+  mutate(item = fct_reorder(item, desc(time))) %>%
+  ggplot() +
+  geom_col(aes(x = item, y = time)) +
+  labs(title = paste("Gaze tracking:", sorted_categories[3])) +
+  xlab("") +
+  ylab("Time (sec)") +
+  theme_bw()
+```
+
+Based on what you looked at the most, Total VR has inferred that you are interested in `r names(sort(items, decreasing = TRUE))[1]`.
+
+## Political leaning
+
+```{r politics, out.width="80%"}
+liberal_correlative_names <- c("rap", "reggae", "EDM", "hybrid vehicles")
+liberal_correlatives <- c(data$gaze$music$`rap`, data$gaze$music$`reggae`, data$gaze$music$`EDM`, data$gaze$cars$`hybrid vehicles`)
+conservative_correlative_names <- c("country", "oldies", "pickup trucks")
+conservative_correlatives <- c(data$gaze$music$`country`, data$gaze$music$`oldies`, data$gaze$cars$`pickup trucks`)
+
+leaning <- tibble(item = c("Liberal correlative index", "Conservative correlative index"), partisan_lean = 100 * c(mean(liberal_correlatives), mean(conservative_correlatives)))
+
+leaning %>%
+  ggplot() +
+  geom_col(aes(x = item, y = partisan_lean)) +
+  labs(title = "Political leaning") +
+  xlab("") +
+  ylab("Partisan lean") +
+  theme_bw()
+
+if(mean(liberal_correlatives) > mean(conservative_correlatives))
+{
+  label <- "liberal"
+  explanation <- liberal_correlative_names[which(liberal_correlatives == max(liberal_correlatives))]
+} else
+{
+  label <- "conservative"
+  explanation <- conservative_correlative_names[which(conservative_correlatives == max(conservative_correlatives))]
+}
+```
+
+Based on what you looked at the most, Total VR has inferred that you lean `r label` politically. The most impactful factor was your inferred interest in `r explanation`.

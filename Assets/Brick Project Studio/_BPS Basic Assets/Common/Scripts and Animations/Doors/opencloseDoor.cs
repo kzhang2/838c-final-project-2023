@@ -2,71 +2,45 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SojaExiles
-
+public class opencloseDoor : MonoBehaviour
 {
-	public class opencloseDoor : MonoBehaviour
+
+	public Animator openandclose;
+	public bool open;
+	public Transform Player;
+
+	void Start()
 	{
-
-		public Animator openandclose;
-		public bool open;
-		public Transform Player;
-
-		void Start()
-		{
-			open = false;
-		}
-
-		void OnMouseOver()
-		{
-			{
-				if (Player)
-				{
-					float dist = Vector3.Distance(Player.position, transform.position);
-					if (dist < 30)
-					{
-						if (open == false)
-						{
-							if (OVRInput.GetUp(OVRInput.RawButton.RIndexTrigger))
-							{
-								StartCoroutine(opening());
-							}
-						}
-						else
-						{
-							if (open == true)
-							{
-								if (OVRInput.GetUp(OVRInput.RawButton.RIndexTrigger))
-								{
-									StartCoroutine(closing());
-								}
-							}
-
-						}
-
-					}
-				}
-
-			}
-
-		}
-
-		IEnumerator opening()
-		{
-			print("you are opening the door");
-			openandclose.Play("Opening");
-			open = true;
-			yield return new WaitForSeconds(.5f);
-		}
-
-		IEnumerator closing()
-		{
-			print("you are closing the door");
-			openandclose.Play("Closing");
-			open = false;
-			yield return new WaitForSeconds(.5f);
-		}
-
-
+		open = false;
 	}
+
+	public void changeState()
+	{
+		if(open)
+		{
+			StartCoroutine(closing());
+		}
+		else
+		{
+			StartCoroutine(opening());
+		}
+	}
+
+	IEnumerator opening()
+	{
+		print("you are opening the door");
+		openandclose.Play("Opening");
+		open = true;
+		yield return new WaitForSeconds(.5f);
+	}
+
+	IEnumerator closing()
+	{
+		print("you are closing the door");
+		openandclose.Play("Closing");
+		open = false;
+		yield return new WaitForSeconds(.5f);
+	}
+
+
 }
